@@ -1,9 +1,15 @@
 ##  windows电脑本地音频导流到局域网
 
 
-最近思考 windows 环境 必须要用耳机 或者蓝牙链接音频吗？答案显然易见，否则也不会有该项目的诞生。
+
+打开手机点个外卖，找个电影，发现台式机没有外放。。。。 所以开发了这款程序，可以利用手机播放电脑声音。
 
 
+打开原理 使用 FFmpeg 解码出来的音频数据 PCM 格式，使用H5的 Web Audio Api 来播放
+
+听起来简单，实现起来发现没办法获取window播放设备，只能读取到输入设备~
+
+尝试多种方案，发现可以使用 directshow 源捕获设备 实现虚拟设备
 
 
 
@@ -28,9 +34,9 @@ virtual-audio-capturer 获取的是播放扬声器音频流
 ## 使用教程
 
 
-### 1.下载ffmpeg 解压根目录命名为ffmpeg
+### 1.下载ffmpeg 解压到根目录重命名为 ffmpeg
 
-[FFmpeg 成品](https://github.com/BtbN/FFmpeg-Builds/releases)
+[FFmpeg 下载](https://github.com/BtbN/FFmpeg-Builds/releases)
 
 <img src="./img/9b65ea77d3aa2e633b981023f2cb507.png" width="320px">
 
@@ -39,6 +45,9 @@ virtual-audio-capturer 获取的是播放扬声器音频流
 ### 2.安装 device
 
 运行 Setup.Screen.Capturer.Recorder.v0.13.3.exe  自动安装虚拟设备
+
+[Setup.Screen.Capturer.Recorder.v0.13.3.exe 下载](https://github.com/rdp/screen-capture-recorder-to-video-windows-free/releases)
+
 
 ### 3.启动服务
 
@@ -89,7 +98,10 @@ Test-NetConnection -ComputerName 192.168.0.104 -Port 3000
 ```
 
 
-FFmpeg解码出来的音频数据是PCM格式，可以使用H5的Web Audio Api来播放
+
+
+
+## 鸣谢
 
 [WasmVideoPlayer](https://github.com/sonysuqin/WasmVideoPlayer)
 
