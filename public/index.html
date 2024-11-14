@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Select Audio Device</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <h1>电脑 PCM 播放器</h1>
+  <select id="deviceSelect"></select>
+  <button onclick="startStreaming()">读取音频</button>
+  <h1>当前 IP 地址：</h1>
+  <p id="ip-address">加载中...</p>
+
+  <audio ref="audio"  src="../output" controls></audio>
+
+  <!-- <audio id="audioPlayer" controls></audio>
+   -->
+  <p>
+    <input type="button" id="toggle" value="防锁屏：off" />
+  </p>
+
+  <script type="text/javascript" src="js/NosSleep.js"></script>
+  <script type="text/javascript" src="js/pcm-player.js"></script>
+
+
+  <script>
+    
+    var noSleep = new NoSleep();
+
+    var wakeLockEnabled = false;
+    var toggleEl = document.querySelector("#toggle");
+    toggleEl.addEventListener('click', function() {
+      if (!wakeLockEnabled) {
+        noSleep.enable(); // keep the screen on!
+        wakeLockEnabled = true;
+        toggleEl.value = "防锁屏：on";
+        document.body.style.backgroundColor = "red";
+      } else {
+        noSleep.disable(); // let the screen turn off.
+        wakeLockEnabled = false;
+        toggleEl.value = "防锁屏：off";
+        document.body.style.backgroundColor = "";
+      }
+    }, false);
+
+    // 加载时获取 IP 地址
+    async function fetchIp() {
+      try {
+        const response = await fetch('/get-ip');
+        const data = await response.json();
+        document.getElementById('ip-address').textContent = data.ip;
+      } catch (error) {
+        console.error('获取 IP 地址失败:', error);
+        document.getElementById('ip-address').textContent = '无法获取 IP 地址';
+      }
+    }
+    fetchIp();
+
+    // 加载音频设备
+    async function loadDevices() {
+      const response = await fetch('/audio-devices');
+      const devices = await response.json();
+      const deviceSelect = document.getElementById('deviceSelect');
+      devices.forEach(device => {
+        const option = document.createElement('option');
+        option.value = device;
+        option.textContent = device;
+        deviceSelect.appendChild(option);
+      });
+    }
+    const videodd = document.querySelector("video");
+
+
+    let ws;
+
+    // 开始音频流
+    function startStreaming() {
+
+      const ip = document.getElementById('ip-address').textContent;
+      let audioContext;
+      const selectedDevice = document.getElementById('deviceSelect').value;
+
+      ws = new WebSocket(`ws://${ip}:3000/?device=${encodeURIComponent(selectedDevice)}`);
+      console.log(`ws://${ip}:3000/?device=${encodeURIComponent(selectedDevice)}`)
+
+      ws.onopen = function () {
+        console.log('WebSocket connected');
+      };
+
+      
+      var player = new PCMPlayer({
+              encoding: '16bitInt',
+              channels: 2,
+              sampleRate: 48000,
+              flushingTime: 0
+      });
+     
+      ws.binaryType = 'arraybuffer';
+      
+
+
+      ws.onopen = function() {
+        //如果是重连则关闭轮询
+        timeid && window.clearInterval(timeid);
+        if(reconnect){
+          alert('重连成功,部分');
+        }
+      };
+
+      ws.onmessage = function(e){
+        var data = new Uint8Array(e.data);
+
+        if (player.audioCtx.state === 'suspended') {
+          player.audioCtx.resume();  // 确保 AudioContext 已被激活
+        }
+
+        player.feed(data);
+        
+        // document.getElementById('ip-address').textContent = player
+
+        player.volume(1); 
+      }; 
+
+      //当断开时进行判断
+      ws.onclose=function(e){
+
+        setTimeout(startStreaming, 5000);  // 重新连接
+      }
+
+      
+      // ws.addEventListener('message',function(event) {
+      //   const stream = new Blob([event.data], { type: 'audio/mp3' });
+      //       videodd.srcObject = stream;
+      //       // 创建 MediaStreamAudioSourceNode // 将 HTMLMediaElement 提供给它
+      //       const audioCtx = new AudioContext();
+      //       const source = audioCtx.createMediaStreamSource(stream);
+
+      //       // 创建双二阶滤波器
+      //       const biquadFilter = audioCtx.createBiquadFilter();
+      //       biquadFilter.type = "lowshelf";
+      //       biquadFilter.frequency.value = 1000;
+      //       biquadFilter.gain.value = range.value;
+
+      //       // 将 AudioBufferSourceNode 连接到 gainNode // 并将 gainNode 连接到目的地，这样我们就可以播放 // 音乐并使用鼠标光标调整音量
+      //       source.connect(biquadFilter);
+           
+      // });
+
+      // ws.onmessage = (event) => {
+
+
+       
+      //   // 假设事件中包含的是音频数据
+      //   console.log('Received audio data');
+      //   const audioBlob = new Blob([event.data], { type: 'audio/mp3' });
+      //   const audioUrl = URL.createObjectURL(audioBlob);
+
+      //   // 获取 audio 元素并设置其源
+      //   const audioPlayer = document.getElementById('audioPlayer');
+      //   audioPlayer.src = audioUrl;
+
+      //   // 播放音频
+      //   audioPlayer.play().catch((error) => {
+      //     console.error('播放音频时出错:', error);
+      //   });
+
+      // };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+
+      ws.onopen = () => {
+        console.log('WebSocket connection established');
+      };
+    }
+
+    // 初始化设备列表
+    loadDevices();
+
+  </script>
+
+  
+</body>
+</html>
