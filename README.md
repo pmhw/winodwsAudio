@@ -23,7 +23,7 @@ screen-capture-recorder 获取的是电脑视频流
 
 virtual-audio-capturer 获取的是播放扬声器音频流
 
-<img src="./img/288c94395e942580b3306472166adf0.png" width="120px">
+<img src="./img/288c94395e942580b3306472166adf0.png" width="220px">
 
 ## 使用教程
 
@@ -32,9 +32,9 @@ virtual-audio-capturer 获取的是播放扬声器音频流
 
 [FFmpeg 成品](https://github.com/BtbN/FFmpeg-Builds/releases)
 
-<img src="./img/9b65ea77d3aa2e633b981023f2cb507.png" width="220px">
+<img src="./img/9b65ea77d3aa2e633b981023f2cb507.png" width="320px">
 
-<img src="./img/dcd36d179999bbdfe0b001e99f8f731.png" width="220px">
+<img src="./img/dcd36d179999bbdfe0b001e99f8f731.png" width="320px">
 
 ### 2.安装 device
 
